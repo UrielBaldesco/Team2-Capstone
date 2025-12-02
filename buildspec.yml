@@ -11,8 +11,8 @@ phases:
     commands:
       - echo build Docker image on `date`
       - cd src
-      - docker build -t latest:latest .
-      - docker tag latest:latest 962804699607.dkr.ecr.us-west-2.amazonaws.com/iamroot-ecr-repo:latest
+      - docker build -t iamroot-ecr-repo:latest .
+      - docker tag iamroot-ecr-repo:latest 962804699607.dkr.ecr.us-west-2.amazonaws.com/iamroot-ecr-repo:latest
   post_build:
     commands:
       - echo build Docker image complete `date`
