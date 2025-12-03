@@ -1,23 +1,26 @@
-# pull official base image
-#FROM node:13.12.0-alpine
-FROM public.ecr.aws/docker/library/node:16.18.1-alpine
-# set working directory
+# Multi-stage build for React todo app
+# Stage 1: Build
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
-
-# install app dependencies
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm install
-RUN npm install react-scripts@3.4.1
-
-# add app
-COPY . ./
-
-# Make port 3000 available to the world outside this container
+# Copy package files
+COPY package.json package-lock.json ./
+# Install dependencies
+RUN npm ci
+# Copy source code
+COPY public/ ./public/
+COPY src/ ./src/
+# Build the React app
+RUN npm run build
+# Stage 2: Production serve with nginx
+FROM nginx:alpine
+# Copy built app from builder stage
+COPY --from=builder /app/build /usr/share/nginx/html
+# Copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Expose port 3000
 EXPOSE 3000
-
-# start app
-CMD ["npm", "start"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
