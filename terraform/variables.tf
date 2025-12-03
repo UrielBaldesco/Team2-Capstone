@@ -7,7 +7,13 @@ variable "aws_region" {
 variable "project_name" {
   description = "Project name for resource naming"
   type        = string
-  default     = "react-todo"
+  default     = "cloud9-react-todo"
+}
+
+variable "project_name_lower" {
+  description = "Lowercase project name for ECR compatibility"
+  type        = string
+  default     = "cloud9-react-todo"
 }
 
 variable "todo_bucket_name" {
@@ -15,7 +21,7 @@ variable "todo_bucket_name" {
   type        = string
 }
 
-variable "ecr_repository_uri" {
+variable "ecr_repository_uri" { 
   description = "ECR repository URI (from Phase 2 - YOHAN)"
   type        = string
 }

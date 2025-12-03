@@ -18,8 +18,8 @@ resource "aws_iam_role" "lambda_exec" {
 
 # Policy: Allow Lambda to read from S3
 resource "aws_iam_role_policy" "lambda_s3_policy" {
-  name   = "${var.project_name}-lambda-s3-policy"
-  role   = aws_iam_role.lambda_exec.id
+  name = "${var.project_name}-lambda-s3-policy"
+  role = aws_iam_role.lambda_exec.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -100,8 +100,8 @@ resource "aws_iam_role" "codebuild_role" {
 
 # CodeBuild Policy: ECR permissions
 resource "aws_iam_role_policy" "codebuild_ecr_policy" {
-  name   = "${var.project_name}-codebuild-ecr-policy"
-  role   = aws_iam_role.codebuild_role.id
+  name = "${var.project_name}-codebuild-ecr-policy"
+  role = aws_iam_role.codebuild_role.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -124,8 +124,8 @@ resource "aws_iam_role_policy" "codebuild_ecr_policy" {
 
 # CodeBuild Policy: ECS permissions
 resource "aws_iam_role_policy" "codebuild_ecs_policy" {
-  name   = "${var.project_name}-codebuild-ecs-policy"
-  role   = aws_iam_role.codebuild_role.id
+  name = "${var.project_name}-codebuild-ecs-policy"
+  role = aws_iam_role.codebuild_role.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -145,8 +145,8 @@ resource "aws_iam_role_policy" "codebuild_ecs_policy" {
 
 # CodeBuild Policy: S3 permissions (for Terraform state)
 resource "aws_iam_role_policy" "codebuild_s3_policy" {
-  name   = "${var.project_name}-codebuild-s3-policy"
-  role   = aws_iam_role.codebuild_role.id
+  name = "${var.project_name}-codebuild-s3-policy"
+  role = aws_iam_role.codebuild_role.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -168,8 +168,8 @@ resource "aws_iam_role_policy" "codebuild_s3_policy" {
 
 # CodeBuild Policy: DynamoDB permissions (for Terraform state locking)
 resource "aws_iam_role_policy" "codebuild_dynamodb_policy" {
-  name   = "${var.project_name}-codebuild-dynamodb-policy"
-  role   = aws_iam_role.codebuild_role.id
+  name = "${var.project_name}-codebuild-dynamodb-policy"
+  role = aws_iam_role.codebuild_role.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -189,8 +189,8 @@ resource "aws_iam_role_policy" "codebuild_dynamodb_policy" {
 
 # CodeBuild Policy: Terraform/IAM/Lambda permissions
 resource "aws_iam_role_policy" "codebuild_infra_policy" {
-  name   = "${var.project_name}-codebuild-infra-policy"
-  role   = aws_iam_role.codebuild_role.id
+  name = "${var.project_name}-codebuild-infra-policy"
+  role = aws_iam_role.codebuild_role.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -212,8 +212,8 @@ resource "aws_iam_role_policy" "codebuild_infra_policy" {
 
 # Logs policy for CodeBuild
 resource "aws_iam_role_policy" "codebuild_logs_policy" {
-  name   = "${var.project_name}-codebuild-logs-policy"
-  role   = aws_iam_role.codebuild_role.id
+  name = "${var.project_name}-codebuild-logs-policy"
+  role = aws_iam_role.codebuild_role.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

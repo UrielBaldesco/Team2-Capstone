@@ -8,14 +8,14 @@ terraform {
     }
   }
 
-  backend "s3" {
-    # Update these values before running terraform init
-    bucket         = "iam-root-terraform-state"
-    key            = "capstone/terraform.tfstate"
-    region         = "us-west-2"
-    encrypt        = true
-    dynamodb_table = "iam-root-terraform-lock"
-  }
+  # backend "s3" {
+  #   # Update these values before running terraform init
+  #   bucket         = "iam-root-terraform-state"
+  #   key            = "capstone/terraform.tfstate"
+  #   region         = "us-west-2"
+  #   encrypt        = true
+  #   dynamodb_table = "iam-root-terraform-lock"
+  # }
 }
 
 provider "aws" {

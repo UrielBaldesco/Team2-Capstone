@@ -39,12 +39,12 @@ resource "aws_s3_object" "todo_json" {
 
 # Lambda Function
 resource "aws_lambda_function" "get_person" {
-  filename            = "lambda.zip"
-  function_name       = "${var.project_name}-get-person"
-  role                = aws_iam_role.lambda_exec.arn
-  handler             = "index.handler"
-  runtime             = "nodejs18.x"
-  source_code_hash    = filebase64sha256("${path.module}/lambda.zip")
+  filename         = "lambda.zip"
+  function_name    = "${var.project_name}-get-person"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "index.handler"
+  runtime          = "nodejs18.x"
+  source_code_hash = filebase64sha256("${path.module}/lambda.zip")
 
   environment {
     variables = {
@@ -85,28 +85,28 @@ resource "aws_api_gateway_resource" "get_person" {
 
 # API Gateway Method: GET /get-person
 resource "aws_api_gateway_method" "get_person" {
-  rest_api_id      = aws_api_gateway_rest_api.main.id
-  resource_id      = aws_api_gateway_resource.get_person.id
-  http_method      = "GET"
-  authorization    = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.get_person.id
+  http_method   = "GET"
+  authorization = "NONE"
 }
 
 # API Gateway Integration: Connect to Lambda
 resource "aws_api_gateway_integration" "get_person" {
-  rest_api_id      = aws_api_gateway_rest_api.main.id
-  resource_id      = aws_api_gateway_resource.get_person.id
-  http_method      = aws_api_gateway_method.get_person.http_method
-  type             = "AWS_PROXY"
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.get_person.id
+  http_method             = aws_api_gateway_method.get_person.http_method
+  type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri              = aws_lambda_function.get_person.invoke_arn
+  uri                     = aws_lambda_function.get_person.invoke_arn
 }
 
 # API Gateway CORS Mock (for preflight)
 resource "aws_api_gateway_method" "get_person_options" {
-  rest_api_id      = aws_api_gateway_rest_api.main.id
-  resource_id      = aws_api_gateway_resource.get_person.id
-  http_method      = "OPTIONS"
-  authorization    = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.get_person.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "get_person_options" {
@@ -122,10 +122,10 @@ resource "aws_api_gateway_integration" "get_person_options" {
 }
 
 resource "aws_api_gateway_integration_response" "get_person_options" {
-  rest_api_id       = aws_api_gateway_rest_api.main.id
-  resource_id       = aws_api_gateway_resource.get_person.id
-  http_method       = aws_api_gateway_method.get_person_options.http_method
-  status_code       = "200"
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.get_person.id
+  http_method = aws_api_gateway_method.get_person_options.http_method
+  status_code = "200"
   response_templates = {
     "application/json" = ""
   }
@@ -172,7 +172,7 @@ resource "aws_api_gateway_stage" "prod" {
 
 # ECR Repository
 resource "aws_ecr_repository" "react_todo" {
-  name                 = var.project_name
+  name                 = var.project_name_lower
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 
