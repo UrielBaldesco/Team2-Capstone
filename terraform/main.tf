@@ -216,8 +216,8 @@ resource "aws_ecs_task_definition" "main" {
       essential = true
        portMappings = [
          {
-           containerPort = 8080
-           hostPort      = 8080
+           containerPort = 3000
+           hostPort      = 3000
            protocol      = "http"
          }
        ]
@@ -276,8 +276,8 @@ resource "aws_security_group" "ecs" {
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    from_port   = 8080
-    to_port     = 8080
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
