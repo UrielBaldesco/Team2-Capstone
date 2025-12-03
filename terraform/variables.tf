@@ -24,6 +24,7 @@ variable "todo_bucket_name" {
 variable "ecr_repository_uri" { 
   description = "ECR repository URI (from Phase 2 - YOHAN)"
   type        = string
+  default     = "cloud9-react-todo"
 }
 
 variable "ecs_cluster_name" {

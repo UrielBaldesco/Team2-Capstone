@@ -229,3 +229,90 @@ resource "aws_iam_role_policy" "codebuild_logs_policy" {
     ]
   })
 }
+
+
+# CodePipeline Service Role
+resource "aws_iam_role" "codepipeline_role" {
+  name = "${var.project_name}-codepipeline-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "codepipeline.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# CodePipeline Policy: CodeConnections (GitHub)
+resource "aws_iam_role_policy" "codepipeline_connections_policy" {
+  name   = "${var.project_name}-codepipeline-connections-policy"
+  role   = aws_iam_role.codepipeline_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "codestarconnections:UseConnection"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# CodePipeline Policy: S3, CodeBuild, ECS
+resource "aws_iam_role_policy" "codepipeline_policy" {
+  name   = "${var.project_name}-codepipeline-policy"
+  role   = aws_iam_role.codepipeline_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:GetObjectVersion"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codebuild:BatchGetBuilds",
+          "codebuild:BatchGetProjects",
+          "codebuild:BatchGetReports",
+          "codebuild:BatchGetReportGroups",
+          "codebuild:CreateReport",
+          "codebuild:CreateReportGroup",
+          "codebuild:PutReportEvents",
+          "codebuild:UpdateReportGroup",
+          "codebuild:BatchPutTestReports"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codebuild:BatchGetBuilds",
+          "codebuild:BatchGetProjects"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:UpdateService"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
