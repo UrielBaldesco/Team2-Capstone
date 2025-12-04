@@ -1,7 +1,7 @@
 # Multi-stage build for React todo app
 # Stage 1: Build
 # FROM node:18-alpine AS builder
-FROM public.ecr.aws/docker/library/node:16.18.1-alpine
+FROM public.ecr.aws/docker/library/node:16.18.1-alpine AS builder
 WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
