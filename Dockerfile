@@ -13,7 +13,8 @@ COPY src/ ./src/
 # Build the React app
 RUN npm run build
 # Stage 2: Production serve with nginx
-FROM nginx:alpine
+# FROM nginx:alpine
+FROM public.ecr.aws/docker/library/nginx:alpine
 # Copy built app from builder stage
 COPY --from=builder /app/build /usr/share/nginx/html
 # Copy nginx config
