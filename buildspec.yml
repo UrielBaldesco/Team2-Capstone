@@ -10,14 +10,14 @@ phases:
   build:
     commands:
       - echo build Docker image on `date`
-      - docker build -t cloud9-react-todo:latest .
+      - docker build --build-arg REACT_APP_API_ENDPOINT=https://924vprwip1.execute-api.us-west-2.amazonaws.com/Prod/get-todo -t cloud9-react-todo:latest .
       - docker tag cloud9-react-todo:latest 962804699607.dkr.ecr.us-west-2.amazonaws.com/cloud9-react-todo:latest
   post_build:
     commands:
       - echo build Docker image complete `date`
-      - echo push latest Docker images to ECR....
+      - echo push latest Docker images to ECR...
       - docker push 962804699607.dkr.ecr.us-west-2.amazonaws.com/cloud9-react-todo:latest
-      - echo creating imagedefinitions.json....
+      - echo creating imagedefinitions.json...
       - printf '[{"name":"Cloud9-react-todo","imageUri":"%s"}]' 962804699607.dkr.ecr.us-west-2.amazonaws.com/cloud9-react-todo:latest > imagedefinitions.json
 
 artifacts:
