@@ -218,7 +218,7 @@ resource "aws_ecs_task_definition" "main" {
          {
            containerPort = 3000
            hostPort      = 3000
-           protocol      = "http"
+           protocol      = "tcp"
          }
        ]
       logConfiguration = {
@@ -254,11 +254,18 @@ resource "aws_ecs_service" "main" {
   task_definition = aws_ecs_task_definition.main.arn
   desired_count   = 1
   launch_type     = "FARGATE"
+  force_new_deployment = true
 
   network_configuration {
-    assign_public_ip = true
+    assign_public_ip = false
     subnets          = data.aws_subnets.default.ids
     security_groups  = [aws_security_group.ecs.id]
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.main.arn
+    container_name   = var.project_name
+    container_port   = 3000
   }
 
   tags = {
@@ -266,21 +273,16 @@ resource "aws_ecs_service" "main" {
   }
 
   depends_on = [
-    aws_ecs_task_definition.main
+    aws_ecs_task_definition.main,
+    aws_lb_listener.https
   ]
 }
 
 # Security Group for ECS
+# NOTE: Ingress rules are managed by security_group_rule resources below
 resource "aws_security_group" "ecs" {
   name_prefix = "${var.project_name}-ecs-"
   vpc_id      = data.aws_vpc.default.id
-
-  ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   egress {
     from_port   = 0
@@ -304,5 +306,149 @@ data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
+  }
+}
+
+# Application Load Balancer
+resource "aws_lb" "main" {
+  name               = "${var.project_name_lower}-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb.id]
+  subnets            = data.aws_subnets.default.ids
+
+  tags = {
+    Project = var.project_name
+  }
+}
+
+# ALB Target Group
+resource "aws_lb_target_group" "main" {
+  name        = "${var.project_name_lower}-tg"
+  port        = 3000
+  protocol    = "HTTP"
+  vpc_id      = data.aws_vpc.default.id
+  target_type = "ip"
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    interval            = 30
+    path                = "/"
+    matcher             = "200"
+  }
+
+  tags = {
+    Project = var.project_name
+  }
+}
+
+# ALB HTTP Listener (redirect to HTTPS)
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+# ALB HTTPS Listener
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = aws_acm_certificate.main.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+}
+
+# Security Group for ALB
+resource "aws_security_group" "alb" {
+  name_prefix = "${var.project_name}-alb-"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Project = var.project_name
+  }
+}
+
+# Allow ALB to reach ECS tasks
+resource "aws_security_group_rule" "alb_to_ecs" {
+  type                     = "ingress"
+  from_port                = 3000
+  to_port                  = 3000
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.alb.id
+  security_group_id        = aws_security_group.ecs.id
+}
+
+# Self-signed SSL Certificate for testing
+resource "tls_private_key" "main" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "tls_self_signed_cert" "main" {
+  private_key_pem = tls_private_key.main.private_key_pem
+
+  subject {
+    common_name  = "cloud9-react-todo.local"
+    organization = "Cloud9"
+  }
+
+  validity_period_hours = 8760 # 1 year
+
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "server_auth",
+  ]
+}
+
+# Import self-signed cert into ACM
+resource "aws_acm_certificate" "main" {
+  private_key      = tls_private_key.main.private_key_pem
+  certificate_body = tls_self_signed_cert.main.cert_pem
+
+  tags = {
+    Project = var.project_name
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
